@@ -1,0 +1,33 @@
+{
+  "name": "ski",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node server/src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "pg": "^8.13.1",
+    "pg-cloudflare": "^1.1.1",
+    "pg-connection-string": "^2.7.0",
+    "pg-int8": "^1.0.1",
+    "pg-pool": "^3.7.0",
+    "pg-protocol": "^1.7.0",
+    "pgpass": "^1.0.5",
+    "split2": "^4.2.0",
+    "xtend": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,5 +1,6 @@
 import { VisionService } from './vision.service';
 import { logger } from '../utils/logger';
+import { pool } from '../utils/database';
 
 export type CrowdLevel = 'low' | 'medium' | 'high';
 
@@ -26,15 +27,22 @@ export class MetricsService {
     public async processFrame(imagePath: string): Promise<CrowdMetric> {
         try {
             const detection = await this.visionService.detectPeople(imagePath);
-            
-            return {
+            const metric = {
                 timestamp: new Date(),
                 crowdLevel: this.determineCrowdLevel(detection.count),
                 confidence: detection.confidence,
                 peopleCount: detection.count
             };
+    
+            // Add this part to save to database
+            await pool.query(
+                'INSERT INTO crowding_metrics (timestamp, people_count, confidence, created_at) VALUES ($1, $2, $3, NOW())',
+                [metric.timestamp, metric.peopleCount, metric.confidence]
+            );
+    
+            return metric;
         } catch (error) {
-            logger.error('Error processing frame for metrics:', error);
+            logger.error('Error processing frame:', error);
             throw error;
         }
     }
