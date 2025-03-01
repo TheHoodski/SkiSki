@@ -6,7 +6,7 @@ import { fetchResortDetails } from '../utils/api';
 import CrowdingBadge from '../components/resort/CrowdingBadge';
 import BaseCamView from '../components/resort/BaseCamView';
 import CrowdingTrend from '../components/resort/CrowdingTrend';
-import Loading from '../components/shared/Loading';
+import Loading from '../components/Loading';
 
 export default function ResortPage() {
   const { id } = useParams<{ id: string }>();

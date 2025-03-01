@@ -1,6 +1,6 @@
 // client/src/pages/HomePage.tsx
 
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import ResortCard from '../components/resort/ResortCard';
 import { fetchResorts } from '../utils/api';
 import Loading from '../components/Loading';

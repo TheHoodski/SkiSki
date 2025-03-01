@@ -13,8 +13,7 @@ import {
   ChartData,
   TooltipItem,
   Scale,
-  CoreScaleOptions,
-  Tick
+  CoreScaleOptions
 } from 'chart.js';
 
 // Register Chart.js components
@@ -88,7 +87,7 @@ export default function CrowdingTrend({ data }: CrowdingTrendProps) {
         beginAtZero: true,
         max: 4,
         ticks: {
-          callback: function(this: Scale<CoreScaleOptions>, tickValue: number | string, index: number, ticks: Tick[]) {
+          callback: function(this: Scale<CoreScaleOptions>, tickValue: number | string) {
             const value = Number(tickValue);
             switch (value) {
               case 0: return 'Unknown';
@@ -104,13 +103,15 @@ export default function CrowdingTrend({ data }: CrowdingTrendProps) {
         type: 'linear' as const,
         beginAtZero: true,
         max: 1,
-        position: 'right',
+        position: 'right' as const,
         title: {
           display: true,
           text: 'Confidence'
         },
         ticks: {
-          callback: (value: number) => `${(value * 100).toFixed(0)}%`
+          callback: function(this: Scale<CoreScaleOptions>, value: number | string) {
+            return `${(Number(value) * 100).toFixed(0)}%`;
+          }
         },
         grid: {
           drawOnChartArea: false

@@ -1,11 +1,10 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import CrowdingBadge from './CrowdingBadge';
+import CrowdingBadge from '../resort/CrowdingBadge';
 
 interface Resort {
   resort_id: string;
   name: string;
-  current_crowding: string;
+  current_crowding?: string;
   current_confidence?: number;
   base_cam_url: string;
 }
