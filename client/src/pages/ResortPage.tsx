@@ -10,7 +10,13 @@ import Loading from '../components/Loading';
 
 export default function ResortPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: resort, isLoading, error } = useQuery(['resort', id], () => fetchResortDetails(id as string));
+  
+  // Updated to use the object syntax for React Query v5
+  const { data: resort, isLoading, error } = useQuery({
+    queryKey: ['resort', id || ''],
+    queryFn: () => fetchResortDetails(id as string),
+    enabled: !!id
+  });
 
   if (isLoading) return <Loading />;
   if (error) return <div className="text-alpine-red">Error fetching resort details: {(error as Error).message}</div>;

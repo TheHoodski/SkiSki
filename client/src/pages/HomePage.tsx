@@ -6,7 +6,10 @@ import { fetchResorts } from '../utils/api';
 import Loading from '../components/Loading';
 
 export default function HomePage() {
-  const { data: resorts, isLoading, error } = useQuery('resorts', fetchResorts);
+  const { data: resorts, isLoading, error } = useQuery({
+    queryKey: ['resorts'],
+    queryFn: fetchResorts
+  });
 
   if (isLoading) return <Loading />;
   if (error) return <div className="text-alpine-red">Error fetching resorts: {(error as Error).message}</div>;

@@ -1,11 +1,11 @@
 // client/src/App.tsx
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import HomePage from './pages/HomePage'
-import ResortPage from './pages/ResortPage'
-import Header from '../shared/Header'
-import Footer from '../shared/Footer'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import ResortPage from './pages/ResortPage';
+import Header from '@shared/Header';
+import Footer from '@shared/Footer';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
       retry: 1
     }
   }
-})
+});
 
 function App() {
   return (
@@ -34,7 +34,7 @@ function App() {
         </div>
       </Router>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;

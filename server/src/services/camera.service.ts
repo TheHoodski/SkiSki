@@ -1,13 +1,16 @@
+// server/src/services/camera.service.ts - updated to fix the processFrame parameter issue
 import { MetricsService } from './metrics.service';
 import ffmpeg from 'fluent-ffmpeg';
 import { logger } from '../utils/logger';
 import path from 'path';
+import { pool } from '../utils/database';
 
 export class CameraService {
     private readonly streamUrl: string;
     private readonly framesDir: string;
-    private processingInterval: NodeJS.Timeout | null = null;  // Only declare once here
+    private processingInterval: NodeJS.Timeout | null = null;
     private readonly metricsService: MetricsService;
+    private resortId: string | null = null;
 
     constructor() {
         this.streamUrl = 'https://streamer6.brownrice.com/parkcitymtnvillage/parkcitymtnvillage.stream/main_playlist.m3u8';
@@ -59,7 +62,7 @@ export class CameraService {
         });
     }
 
-    public startProcessing(intervalMs: number = 300000) { // 5 minutes default
+    public async startProcessing(intervalMs: number = 300000) { // 5 minutes default
         logger.info('Starting camera processing service...');
         
         if (this.processingInterval) {
@@ -67,10 +70,31 @@ export class CameraService {
             this.stopProcessing();
         }
 
+        // Get the resort ID from the database (using the first resort we find)
+        try {
+            const resortResult = await pool.query('SELECT resort_id FROM resorts LIMIT 1');
+            if (resortResult.rows.length > 0) {
+                this.resortId = resortResult.rows[0].resort_id;
+                logger.info(`Using resort ID: ${this.resortId}`);
+            } else {
+                logger.error('No resorts found in database. Please add a resort first.');
+                return;
+            }
+        } catch (error) {
+            logger.error('Error fetching resort ID:', error);
+            return;
+        }
+
         this.processingInterval = setInterval(async () => {
             try {
+                if (!this.resortId) {
+                    logger.error('No resort ID available. Cannot process frame.');
+                    return;
+                }
+
                 const framePath = await this.captureFrame();
-                const metrics = await this.metricsService.processFrame(framePath);
+                // Pass both parameters to processFrame
+                const metrics = await this.metricsService.processFrame(this.resortId, framePath);
                 logger.info('Processing results:', metrics);
             } catch (error) {
                 logger.error('Error in processing interval:', error);
