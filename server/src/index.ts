@@ -3,13 +3,14 @@ import express from 'express';
 import cors from 'cors';
 import { CameraService } from './services/camera.service';
 import { logger } from './utils/logger';
-import { initDb } from './utils/database';
+import { pool, initDb, resetPool } from './utils/database';
 import resortRoutes from './routes/resort.routes';
 import metricsRoutes from './routes/metrics.routes';
 import cameraRoutes, { setCameraService } from './routes/camera.routes';
 import { errorHandler } from './middleware/error.middleware';
 import { requestLogger } from './middleware/logging.middleware';
 import { rateLimiter } from './middleware/rateLimit.middleware';
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -42,6 +43,10 @@ setCameraService(cameraService);
 // Start the app
 const startApp = async () => {
     try {
+        //Reset the pool first
+        await resetPool();
+        logger.info('Database pool has been reset');
+
         // Initialize database
         await initDb();
         

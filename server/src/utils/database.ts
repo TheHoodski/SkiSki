@@ -1,5 +1,5 @@
 // server/src/utils/database.ts
-import { Pool } from 'pg';
+import { Pool, Client } from 'pg';
 import { logger } from './logger';
 
 const pool = new Pool({
@@ -11,11 +11,54 @@ const pool = new Pool({
     ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : undefined
 });
 
+// Add a function to get a fresh client connection
+export async function getClient() {
+    const client = new Client({
+        user: process.env.POSTGRES_USER || 'postgres',
+        host: process.env.POSTGRES_HOST || 'localhost',
+        database: process.env.POSTGRES_DB || 'skicrowd',
+        password: process.env.POSTGRES_PASSWORD,
+        port: parseInt(process.env.POSTGRES_PORT || '5432'),
+        ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : undefined
+    });
+    
+    await client.connect();
+    return client;
+}
+
 // Test the connection
 pool.on('error', (err) => {
     logger.error('Unexpected error on idle client', err);
     process.exit(-1);
 });
+
+// Add this new function here
+export async function resetPool() {
+    try {
+        logger.info('Resetting database connection pool');
+        // Instead of ending and trying to reuse the pool, let's recreate it
+        await pool.end();
+        logger.info('Pool connections ended');
+        
+        // Create a new pool with the same configuration
+        const newPool = new Pool({
+            user: process.env.POSTGRES_USER || 'postgres',
+            host: process.env.POSTGRES_HOST || 'localhost',
+            database: process.env.POSTGRES_DB || 'skicrowd',
+            password: process.env.POSTGRES_PASSWORD,
+            port: parseInt(process.env.POSTGRES_PORT || '5432'),
+            ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : undefined
+        });
+        
+        // Replace the global pool reference with our new pool
+        Object.assign(pool, newPool);
+        
+        logger.info('Database pool has been reset');
+    } catch (error) {
+        logger.error('Error resetting pool:', error);
+        throw error;
+    }
+}
 
 export async function initDb() {
     try {
@@ -45,6 +88,8 @@ export async function initDb() {
                 peak_elevation INTEGER,
                 website_url VARCHAR(255),
                 base_cam_url VARCHAR(255) NOT NULL,
+                webcam_type VARCHAR(20) NOT NULL DEFAULT 'direct_stream',
+                youtube_video_id VARCHAR(20),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );

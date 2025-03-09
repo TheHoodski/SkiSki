@@ -55,22 +55,32 @@ export class CameraService {
      */
     public async loadResortsFromDatabase(): Promise<void> {
         try {
+            // Use a custom SQL query that doesn't rely on the column names being recognized in the schema
             const result = await pool.query(`
-                SELECT resort_id, name, base_cam_url, webcam_type, youtube_video_id 
+                SELECT 
+                    resort_id as "resortId", 
+                    name as "name", 
+                    base_cam_url as "baseCamUrl",
+                    (CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='resorts' AND column_name='webcam_type')
+                        THEN webcam_type 
+                        ELSE 'direct_stream' END) as "webcamType",
+                    (CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='resorts' AND column_name='youtube_video_id')
+                        THEN youtube_video_id 
+                        ELSE NULL END) as "youtubeVideoId"
                 FROM resorts 
                 WHERE base_cam_url IS NOT NULL AND base_cam_url != ''
             `);
-
+    
             for (const resort of result.rows) {
                 this.addResortCamera(
-                    resort.resort_id,
+                    resort.resortId,
                     resort.name,
-                    resort.base_cam_url,
-                    resort.webcam_type,
-                    resort.youtube_video_id
+                    resort.baseCamUrl,
+                    resort.webcamType || 'direct_stream',
+                    resort.youtubeVideoId
                 );
             }
-
+    
             logger.info(`Loaded ${this.resortCameras.size} resort cameras from database`);
         } catch (error) {
             logger.error('Failed to load resort cameras from database:', error);
